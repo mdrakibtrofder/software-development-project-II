@@ -19,6 +19,7 @@ import { SNIPPETS } from '../data/snippets';
 import { LABS } from '../data/labs';
 import { CodeBlock } from './CodeBlock';
 import type { BookmarkItem } from '../state/useStudyStore';
+import { assetUrl } from '../utils/asset';
 
 interface SlideViewerProps {
   week: WeekData;
@@ -43,6 +44,7 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
   const totalSlides = week.deck?.slides || slideMap.length || 1;
   const [page, setPage] = useState(Math.min(Math.max(1, initialPage), totalSlides));
   const [tab, setTab] = useState<'slides' | 'code'>(initialTab);
+  const [slideMode, setSlideMode] = useState<'image' | 'pdf'>('image');
   const [zoom, setZoom] = useState(100);
   const [fullscreen, setFullscreen] = useState(false);
   const [pdfAvailable, setPdfAvailable] = useState<boolean | null>(null);
@@ -69,16 +71,16 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
     setPptxAvailable(null);
     if (!week.deck) return;
 
-    fetch(`/${week.deck.pdf}`, { method: 'HEAD' })
+    fetch(assetUrl(week.deck.pdf), { method: 'HEAD' })
       .then((res) => {
         const ct = res.headers.get('content-type') || '';
-        if (!cancelled) setPdfAvailable(res.ok && ct.includes('pdf'));
+        if (!cancelled) setPdfAvailable(res.ok && (ct.includes('pdf') || res.status === 200));
       })
       .catch(() => {
         if (!cancelled) setPdfAvailable(false);
       });
 
-    fetch(`/${week.deck.pptx}`, { method: 'HEAD' })
+    fetch(assetUrl(week.deck.pptx), { method: 'HEAD' })
       .then((res) => {
         const ct = res.headers.get('content-type') || '';
         if (!cancelled) {
@@ -162,6 +164,32 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
         <div className="flex flex-wrap items-center gap-2">
           {tab === 'slides' && (
             <>
+              {/* Presentation Mode Toggle */}
+              <div className="flex items-center rounded-lg border border-[var(--border)] bg-[var(--surface)] p-0.5">
+                <button
+                  type="button"
+                  onClick={() => setSlideMode('image')}
+                  className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
+                    slideMode === 'image'
+                      ? 'bg-[var(--primary)] text-white font-semibold'
+                      : 'text-[var(--text-muted)] hover:text-[var(--text)]'
+                  }`}
+                >
+                  Presentation
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSlideMode('pdf')}
+                  className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
+                    slideMode === 'pdf'
+                      ? 'bg-[var(--primary)] text-white font-semibold'
+                      : 'text-[var(--text-muted)] hover:text-[var(--text)]'
+                  }`}
+                >
+                  PDF
+                </button>
+              </div>
+
               <div className="flex items-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 py-1">
                 <button
                   type="button"
@@ -221,7 +249,7 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
             <div className="flex items-center gap-1.5">
               {pdfAvailable ? (
                 <a
-                  href={`/${week.deck.pdf}`}
+                  href={assetUrl(week.deck.pdf)}
                   download
                   className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[var(--primary)] text-white text-xs font-semibold hover:opacity-90 whitespace-nowrap"
                 >
@@ -238,7 +266,7 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
               )}
               {pptxAvailable ? (
                 <a
-                  href={`/${week.deck.pptx}`}
+                  href={assetUrl(week.deck.pptx)}
                   download
                   className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] text-xs font-semibold hover:border-[var(--primary)] whitespace-nowrap"
                 >
@@ -268,27 +296,54 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
                 maxWidth: `${Math.round((840 * zoom) / 100)}px`,
               }}
             >
-              {pdfAvailable && week.deck ? (
-                <div className="w-full">
-                  <iframe
-                    src={`/${week.deck.pdf}#page=${page}`}
-                    title={`${week.label} Slide ${page}`}
-                    className="w-full h-[460px] sm:h-[540px] border-0"
-                  />
-                  <div className="px-4 py-2 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-600">
-                    <span className="font-mono">
-                      Page {page} / {totalSlides} · {currentSlideInfo.title}
-                    </span>
-                    <a
-                      href={`/${week.deck.pdf}#page=${page}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-indigo-600 font-semibold hover:underline"
-                    >
-                      Open in new tab <ExternalLink className="w-3 h-3" />
-                    </a>
+              {week.deck ? (
+                slideMode === 'image' ? (
+                  <div className="w-full bg-slate-950 flex flex-col items-center justify-center p-2 sm:p-4">
+                    <img
+                      src={assetUrl(`slides/images/week-${week.id}/slide-${page}.png`)}
+                      alt={`${week.label} Slide ${page}`}
+                      className="w-full h-auto max-h-[65vh] object-contain rounded-lg shadow-xl"
+                      onError={(e) => {
+                        const pad = String(page).padStart(2, '0');
+                        (e.target as HTMLImageElement).src = assetUrl(`slides/images/week-${week.id}/slide-${pad}.png`);
+                      }}
+                    />
+                    <div className="w-full mt-3 px-4 py-2 bg-slate-900 border-t border-slate-800 flex items-center justify-between text-xs text-slate-300">
+                      <span className="font-mono">
+                        Page {page} / {totalSlides} · {currentSlideInfo.title}
+                      </span>
+                      <a
+                        href={assetUrl(week.deck.pdf)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-indigo-400 font-semibold hover:underline"
+                      >
+                        Show PDF in browser <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="w-full">
+                    <iframe
+                      src={`${assetUrl(week.deck.pdf)}#page=${page}`}
+                      title={`${week.label} Slide ${page}`}
+                      className="w-full h-[460px] sm:h-[540px] border-0"
+                    />
+                    <div className="px-4 py-2 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-600">
+                      <span className="font-mono">
+                        Page {page} / {totalSlides} · {currentSlideInfo.title}
+                      </span>
+                      <a
+                        href={assetUrl(week.deck.pdf)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-indigo-600 font-semibold hover:underline"
+                      >
+                        Open in new tab <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                  </div>
+                )
               ) : (
                 /* Graceful interactive Slide Map Stage when PPTX/PDF deck isn't attached yet */
                 <div className="p-6 sm:p-10 min-h-[340px] flex flex-col justify-between bg-gradient-to-br from-white via-slate-50/70 to-indigo-50/40">
@@ -298,7 +353,7 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
                         CSE 3100 · {week.label.toUpperCase()} · SLIDE {page} / {totalSlides}
                       </span>
                       <span className="font-mono text-xs text-slate-500">
-                        {week.deck?.title}
+                        {week.title}
                       </span>
                     </div>
 
@@ -393,7 +448,7 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
               <div className="text-xs font-semibold text-[var(--text-muted)] mb-2">
                 Slide Index (click any slide · ← / → keys)
               </div>
-              <div className="flex gap-2 overflow-x-auto pb-2">
+              <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
                 {slideMap.map((s) => {
                   const active = s.page === page;
                   return (
@@ -401,22 +456,33 @@ export const SlideViewer: React.FC<SlideViewerProps> = ({
                       key={s.page}
                       type="button"
                       onClick={() => setPage(s.page)}
-                      className={`shrink-0 w-36 p-2.5 rounded-xl border text-left transition-colors ${
+                      className={`shrink-0 w-32 p-1.5 rounded-xl border text-left transition-all ${
                         active
-                          ? 'border-[var(--primary)] bg-[var(--primary-soft)]'
+                          ? 'border-[var(--primary)] ring-2 ring-[var(--primary)]/30 bg-[var(--primary-soft)]'
                           : 'border-[var(--border)] bg-[var(--surface-2)]/50 hover:border-[var(--primary)]/60'
                       }`}
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="font-mono text-[11px] font-bold text-[var(--primary)] tabular-nums">
+                      <div className="aspect-video bg-slate-900 rounded overflow-hidden relative mb-1">
+                        <img
+                          src={assetUrl(`slides/images/week-${week.id}/slide-${s.page}.png`)}
+                          alt={`Thumbnail ${s.page}`}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const padNum = String(s.page).padStart(2, '0');
+                            (e.target as HTMLImageElement).src = assetUrl(`slides/images/week-${week.id}/slide-${padNum}.png`);
+                          }}
+                        />
+                        <span className="absolute bottom-1 right-1 px-1 py-0.5 rounded text-[10px] font-mono font-bold bg-black/70 text-white">
                           #{s.page}
                         </span>
-                        {s.simId && (
-                          <FlaskConical className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-                        )}
                       </div>
-                      <div className="text-[11px] font-medium text-[var(--text)] line-clamp-2 mt-1 leading-tight">
-                        {s.title}
+                      <div className="flex items-center justify-between">
+                        <div className="text-[10px] font-medium text-[var(--text)] line-clamp-1 leading-tight">
+                          {s.title}
+                        </div>
+                        {s.simId && (
+                          <FlaskConical className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0 ml-1" />
+                        )}
                       </div>
                     </button>
                   );
