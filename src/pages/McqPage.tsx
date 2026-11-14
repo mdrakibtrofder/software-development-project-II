@@ -80,7 +80,7 @@ export const McqPage: React.FC<McqPageProps> = ({
   const [hiddenOverviewIds, setHiddenOverviewIds] = useState<Record<number, boolean>>({});
 
   // Practice & Exam shared deck options
-  const [lengthLimit, setLengthLimit] = useState<10 | 25 | 50 | 100>(100);
+  const [lengthLimit, setLengthLimit] = useState<10 | 20 | 40 | 80>(80);
   const [shuffleQuestions, setShuffleQuestions] = useState(false);
   const [shuffleSeed, setShuffleSeed] = useState(1);
   const [retryWrongOnly, setRetryWrongOnly] = useState(false);
@@ -523,7 +523,7 @@ export const McqPage: React.FC<McqPageProps> = ({
             <div className="flex flex-wrap items-center gap-2 text-xs">
               <div className="flex items-center gap-1">
                 <span className="text-[var(--text-muted)] font-medium mr-1">Length:</span>
-                {([10, 25, 50, 100] as const).map((len) => (
+                {([10, 20, 40, 80] as const).map((len) => (
                   <button
                     key={len}
                     type="button"
@@ -539,7 +539,7 @@ export const McqPage: React.FC<McqPageProps> = ({
                         : 'bg-[var(--surface)] border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text)]'
                     }`}
                   >
-                    {len === 100 ? 'All' : len}
+                    {len === 80 ? 'All' : len}
                   </button>
                 ))}
               </div>

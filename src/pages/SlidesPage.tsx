@@ -1,5 +1,5 @@
 import React from 'react';
-import { Presentation, ArrowRight, Code2, FileText, Info } from 'lucide-react';
+import { Presentation, ArrowRight, Code2, Info } from 'lucide-react';
 import { COURSE, CLUSTERS } from '../data/course';
 
 interface SlidesPageProps {
@@ -85,24 +85,14 @@ export const SlidesPage: React.FC<SlidesPageProps> = ({ onNavigate }) => {
               </div>
 
               <div className="px-5 py-3.5 border-t border-[var(--border)] bg-[var(--surface-2)]/40 flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => onNavigate(`/week/${week.id}?tab=code`)}
-                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-xs font-semibold hover:border-[var(--primary)]"
-                  >
-                    <Code2 className="w-3.5 h-3.5 text-[var(--primary)]" />
-                    Code
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onNavigate(`/note/${week.id}`)}
-                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-xs font-semibold hover:border-[var(--primary)]"
-                  >
-                    <FileText className="w-3.5 h-3.5 text-violet-600 dark:text-violet-400" />
-                    Note
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => onNavigate(`/week/${week.id}?tab=code`)}
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-xs font-semibold hover:border-[var(--primary)]"
+                >
+                  <Code2 className="w-3.5 h-3.5 text-[var(--primary)]" />
+                  Code
+                </button>
 
                 <button
                   type="button"

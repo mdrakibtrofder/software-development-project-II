@@ -5,7 +5,6 @@ import {
   CheckCircle2,
   Circle,
   Flag,
-  FileText,
   Copy,
   Check,
   RotateCcw,
@@ -15,7 +14,6 @@ import {
   Lightbulb,
 } from 'lucide-react';
 import { COURSE, CLUSTERS } from '../data/course';
-import { STUDY_NOTES } from '../data/notes';
 import { WEEK_QUIZZES } from '../data/quizzes';
 import { SlideViewer } from '../components/SlideViewer';
 import { SimRenderer } from '../components/sims/SimRenderer';
@@ -61,10 +59,10 @@ export const WeekDetailPage: React.FC<WeekDetailPageProps> = ({
         <h1 className="text-xl font-bold">Week not found</h1>
         <button
           type="button"
-          onClick={() => onNavigate('/weeks')}
+          onClick={() => onNavigate('/slides')}
           className="mt-4 px-4 py-2 rounded-xl bg-[var(--primary)] text-white text-sm font-semibold"
         >
-          Back to Roadmap
+          Back to Slide Decks
         </button>
       </div>
     );
@@ -72,7 +70,6 @@ export const WeekDetailPage: React.FC<WeekDetailPageProps> = ({
 
   const cluster = CLUSTERS[week.cluster];
   const isDone = state.doneWeeks.includes(week.id);
-  const note = STUDY_NOTES.find((n) => n.week === week.id);
   const quiz = WEEK_QUIZZES[week.id] || [];
   const savedPage = initialPage || state.lastPageByWeek[week.id] || 1;
 
@@ -121,10 +118,10 @@ export const WeekDetailPage: React.FC<WeekDetailPageProps> = ({
         <div className="flex items-center justify-between gap-2">
           <button
             type="button"
-            onClick={() => onNavigate('/weeks')}
+            onClick={() => onNavigate('/slides')}
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--text-muted)] hover:text-[var(--primary)]"
           >
-            <ChevronLeft className="w-4 h-4" /> All Weeks
+            <ChevronLeft className="w-4 h-4" /> All Slide Decks
           </button>
         </div>
 
@@ -141,7 +138,7 @@ export const WeekDetailPage: React.FC<WeekDetailPageProps> = ({
           <p className="text-sm sm:text-base text-[var(--text-muted)]">{week.summary}</p>
           <div className="pt-2">
             <h2 className="text-xs font-mono font-bold uppercase text-[var(--text-muted)] mb-2">
-              Official Outline Topics
+              Topics
             </h2>
             <ul className="list-disc pl-5 space-y-1 text-sm text-[var(--text)]">
               {week.topics.map((t) => (
@@ -152,10 +149,10 @@ export const WeekDetailPage: React.FC<WeekDetailPageProps> = ({
           <div className="pt-3">
             <button
               type="button"
-              onClick={() => onNavigate('/project')}
+              onClick={() => onNavigate('/mcq')}
               className="px-4 py-2 rounded-xl bg-[var(--primary)] text-white text-xs font-semibold"
             >
-              Open Project Hub & Proposal Builder
+              Open MCQ Practice
             </button>
           </div>
         </div>
@@ -240,60 +237,37 @@ export const WeekDetailPage: React.FC<WeekDetailPageProps> = ({
         onToggleBookmark={onToggleBookmark}
       />
 
-      {/* What you'll learn + Cross-links + Note Preview */}
-      <section className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        <div className="lg:col-span-7 portal-card rounded-2xl p-5 sm:p-6 space-y-4">
-          <h2 className="text-lg font-bold text-[var(--text)]">What You'll Learn</h2>
-          <div className="flex flex-wrap gap-2">
-            {week.topics.map((t) => (
-              <span
-                key={t}
-                className="px-3 py-1 rounded-lg bg-[var(--surface-2)] border border-[var(--border)] text-xs font-medium text-[var(--text)]"
-              >
-                {t}
-              </span>
-            ))}
-          </div>
-          <div className="p-3.5 rounded-xl bg-[var(--primary-soft)]/70 border border-[var(--primary)]/20 text-xs sm:text-sm">
-            <strong className="text-[var(--primary)]">For your project: </strong>
-            <span className="text-[var(--text)]">{week.forProject}</span>
-          </div>
-
-          {week.crossLinks && week.crossLinks.length > 0 && (
-            <div className="flex flex-wrap gap-2 pt-1">
-              {week.crossLinks.map((cl) => (
-                <button
-                  key={cl.week}
-                  type="button"
-                  onClick={() => onNavigate(`/week/${cl.week}`)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-xs font-semibold text-[var(--primary)] hover:border-[var(--primary)]"
-                >
-                  {cl.label}
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              ))}
-            </div>
-          )}
+      {/* What you'll learn + Cross-links */}
+      <section className="portal-card rounded-2xl p-5 sm:p-6 space-y-4">
+        <h2 className="text-lg font-bold text-[var(--text)]">What You'll Learn</h2>
+        <div className="flex flex-wrap gap-2">
+          {week.topics.map((t) => (
+            <span
+              key={t}
+              className="px-3 py-1 rounded-lg bg-[var(--surface-2)] border border-[var(--border)] text-xs font-medium text-[var(--text)]"
+            >
+              {t}
+            </span>
+          ))}
+        </div>
+        <div className="p-3.5 rounded-xl bg-[var(--primary-soft)]/70 border border-[var(--primary)]/20 text-xs sm:text-sm">
+          <strong className="text-[var(--primary)]">For your project: </strong>
+          <span className="text-[var(--text)]">{week.forProject}</span>
         </div>
 
-        {note && (
-          <div className="lg:col-span-5 portal-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between space-y-4">
-            <div>
-              <div className="flex items-center gap-2 font-mono text-xs font-bold text-violet-600 dark:text-violet-400">
-                <FileText className="w-4 h-4" />
-                STUDY NOTE · {note.readingTime.toUpperCase()}
-              </div>
-              <h2 className="text-lg font-bold text-[var(--text)] mt-1">{note.title}</h2>
-              <p className="text-xs sm:text-sm text-[var(--text-muted)] mt-1.5">{note.summary}</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => onNavigate(`/note/${week.id}`)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-violet-600 text-white text-xs sm:text-sm font-semibold hover:opacity-95"
-            >
-              Read the full note
-              <ArrowRight className="w-4 h-4" />
-            </button>
+        {week.crossLinks && week.crossLinks.length > 0 && (
+          <div className="flex flex-wrap gap-2 pt-1">
+            {week.crossLinks.map((cl) => (
+              <button
+                key={cl.week}
+                type="button"
+                onClick={() => onNavigate(`/week/${cl.week}`)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-xs font-semibold text-[var(--primary)] hover:border-[var(--primary)]"
+              >
+                {cl.label}
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            ))}
           </div>
         )}
       </section>

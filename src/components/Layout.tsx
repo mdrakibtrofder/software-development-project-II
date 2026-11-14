@@ -6,15 +6,9 @@ import {
   Moon,
   Sun,
   Home,
-  Map,
-  FileText,
   CheckSquare,
-  MoreHorizontal,
   Sparkles,
   ArrowUp,
-  ChevronDown,
-  FolderKanban,
-  Info,
   RotateCcw,
   X,
   Presentation,
@@ -38,9 +32,7 @@ interface LayoutProps {
 
 const PRIMARY_NAV = [
   { label: 'Home', to: '/', match: (p: string) => p === '/' },
-  { label: 'Roadmap', to: '/weeks', match: (p: string) => p === '/weeks' || p.startsWith('/week/') },
-  { label: 'Slides', to: '/slides', match: (p: string) => p === '/slides' },
-  { label: 'Notes', to: '/notes', match: (p: string) => p === '/notes' || p.startsWith('/note/') },
+  { label: 'Slides', to: '/slides', match: (p: string) => p === '/slides' || p.startsWith('/week/') },
   { label: 'Visualizations', to: '/labs', match: (p: string) => p === '/labs' || p.startsWith('/lab/') },
   { label: 'Glossary', to: '/glossary', match: (p: string) => p === '/glossary' },
   { label: 'MCQ', to: '/mcq', match: (p: string) => p === '/mcq' },
@@ -57,12 +49,10 @@ export const Layout: React.FC<LayoutProps> = ({
   onResetProgress,
   children,
 }) => {
-  const [moreOpen, setMoreOpen] = useState(false);
   const [fabOpen, setFabOpen] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
 
   useEffect(() => {
-    setMoreOpen(false);
     setFabOpen(false);
   }, [route.path]);
 
@@ -97,7 +87,7 @@ export const Layout: React.FC<LayoutProps> = ({
           </button>
 
           {/* Center: Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-6" aria-label="Primary navigation">
+          <nav className="hidden lg:flex items-center gap-7" aria-label="Primary navigation">
             {PRIMARY_NAV.map((item) => {
               const active = item.match(route.path);
               return (
@@ -121,41 +111,6 @@ export const Layout: React.FC<LayoutProps> = ({
                 </button>
               );
             })}
-
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setMoreOpen((v) => !v)}
-                className={`inline-flex items-center gap-1 py-2 text-sm font-semibold whitespace-nowrap shrink-0 transition-colors ${
-                  route.path === '/project' || route.path === '/about'
-                    ? 'text-[var(--primary)]'
-                    : 'text-[var(--text-muted)] hover:text-[var(--text)]'
-                }`}
-              >
-                More
-                <ChevronDown className="w-3.5 h-3.5" />
-              </button>
-              {moreOpen && (
-                <div className="absolute right-0 mt-2 w-52 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xl p-1.5 z-50">
-                  <button
-                    type="button"
-                    onClick={() => onNavigate('/project')}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-[var(--text)] hover:bg-[var(--surface-2)] text-left"
-                  >
-                    <FolderKanban className="w-4 h-4 text-[var(--primary)]" />
-                    Project Hub & Builder
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onNavigate('/about')}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-[var(--text)] hover:bg-[var(--surface-2)] text-left"
-                  >
-                    <Info className="w-4 h-4 text-teal-600 dark:text-teal-400" />
-                    Course Info & Outline
-                  </button>
-                </div>
-              )}
-            </div>
           </nav>
 
           {/* Right: Search pill + Bookmarks + Theme toggle */}
@@ -219,17 +174,17 @@ export const Layout: React.FC<LayoutProps> = ({
           <div className="flex flex-wrap items-center gap-4">
             <button
               type="button"
-              onClick={() => onNavigate('/project')}
-              className="font-semibold text-[var(--primary)] hover:underline"
+              onClick={() => onNavigate('/slides')}
+              className="font-semibold text-[var(--text)] hover:text-[var(--primary)]"
             >
-              Project Hub
+              Slides
             </button>
             <button
               type="button"
-              onClick={() => onNavigate('/about')}
-              className="font-semibold text-[var(--text)] hover:text-[var(--primary)]"
+              onClick={() => onNavigate('/mcq')}
+              className="font-semibold text-[var(--primary)] hover:underline"
             >
-              Course Info
+              MCQ Practice
             </button>
             {!confirmReset ? (
               <button
@@ -267,7 +222,7 @@ export const Layout: React.FC<LayoutProps> = ({
         {fabOpen && (
           <div className="mb-3 w-56 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-2xl p-2 space-y-1">
             <div className="px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-[var(--text-muted)]">
-              Quick Jump
+              Slide Decks
             </div>
             <div className="grid grid-cols-3 gap-1 px-1.5 pb-1.5">
               {[1, 2, 3, 4, 5, 6].map((w) => (
@@ -281,14 +236,6 @@ export const Layout: React.FC<LayoutProps> = ({
                 </button>
               ))}
             </div>
-            <button
-              type="button"
-              onClick={() => onNavigate('/project')}
-              className="w-full flex items-center gap-2 px-2.5 py-2 rounded-xl text-xs font-semibold hover:bg-[var(--surface-2)] text-left"
-            >
-              <FolderKanban className="w-3.5 h-3.5 text-[var(--primary)]" />
-              Project Hub
-            </button>
             <button
               type="button"
               onClick={() => {
@@ -334,12 +281,13 @@ export const Layout: React.FC<LayoutProps> = ({
       {/* Mobile Bottom Tab Bar */}
       <nav
         aria-label="Mobile navigation"
-        className="no-print lg:hidden fixed bottom-0 left-0 right-0 z-40 h-16 bg-[var(--surface)]/95 backdrop-blur-md border-t border-[var(--border)] flex items-center justify-around px-2"
+        className="no-print lg:hidden fixed bottom-0 left-0 right-0 z-40 h-16 bg-[var(--surface)]/95 backdrop-blur-md border-t border-[var(--border)] flex items-center justify-around px-1"
       >
         {[
           { label: 'Home', to: '/', icon: Home, match: (p: string) => p === '/' },
-          { label: 'Roadmap', to: '/weeks', icon: Map, match: (p: string) => p === '/weeks' || p.startsWith('/week/') },
-          { label: 'Notes', to: '/notes', icon: FileText, match: (p: string) => p === '/notes' || p.startsWith('/note/') },
+          { label: 'Slides', to: '/slides', icon: Presentation, match: (p: string) => p === '/slides' || p.startsWith('/week/') },
+          { label: 'Labs', to: '/labs', icon: FlaskConical, match: (p: string) => p === '/labs' || p.startsWith('/lab/') },
+          { label: 'Glossary', to: '/glossary', icon: BookOpen, match: (p: string) => p === '/glossary' },
           { label: 'MCQ', to: '/mcq', icon: CheckSquare, match: (p: string) => p === '/mcq' },
         ].map((item) => {
           const Icon = item.icon;
@@ -358,64 +306,7 @@ export const Layout: React.FC<LayoutProps> = ({
             </button>
           );
         })}
-
-        <button
-          type="button"
-          onClick={() => setMoreOpen((v) => !v)}
-          className={`flex flex-col items-center justify-center gap-0.5 min-w-[56px] py-1.5 rounded-xl text-[11px] font-semibold ${
-            moreOpen ? 'text-[var(--primary)]' : 'text-[var(--text-muted)]'
-          }`}
-        >
-          <MoreHorizontal className="w-5 h-5" />
-          <span>More</span>
-        </button>
       </nav>
-
-      {/* Mobile More Sheet */}
-      {moreOpen && (
-        <div
-          className="no-print lg:hidden fixed inset-0 z-50 bg-slate-950/45 flex items-end"
-          onClick={() => setMoreOpen(false)}
-        >
-          <div
-            className="w-full rounded-t-3xl bg-[var(--surface)] border-t border-[var(--border)] p-5 space-y-2"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between pb-2 border-b border-[var(--border)]">
-              <span className="font-bold text-sm text-[var(--text)]">All Study Sections</span>
-              <button
-                type="button"
-                onClick={() => setMoreOpen(false)}
-                className="p-1.5 rounded-lg text-[var(--text-muted)]"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="grid grid-cols-2 gap-2 pt-1">
-              {[
-                { label: 'Slides', to: '/slides', icon: Presentation },
-                { label: 'Visualizations', to: '/labs', icon: FlaskConical },
-                { label: 'Glossary', to: '/glossary', icon: BookOpen },
-                { label: 'Project Hub', to: '/project', icon: FolderKanban },
-                { label: 'Course Info', to: '/about', icon: Info },
-              ].map((m) => {
-                const Icon = m.icon;
-                return (
-                  <button
-                    key={m.to}
-                    type="button"
-                    onClick={() => onNavigate(m.to)}
-                    className="flex items-center gap-2.5 p-3 rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/50 text-xs font-semibold text-[var(--text)]"
-                  >
-                    <Icon className="w-4 h-4 text-[var(--primary)]" />
-                    {m.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

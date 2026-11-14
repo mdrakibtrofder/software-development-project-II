@@ -1,39 +1,39 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
-import path from 'node:path';
-import { MCQ_BANK } from '../src/data/mcq';
+import { MCQ_BANK, MCQ_SECTIONS } from '../src/data/mcq';
 import { COURSE } from '../src/data/course';
 import { WEEK_QUIZZES } from '../src/data/quizzes';
-import { STUDY_NOTES } from '../src/data/notes';
 
-// 1. Verify raw JSON attachment matches src/data/mcq.ts
-const jsonPath = path.resolve(
-  process.cwd(),
-  'public/assets/aistudio/CSE_3100_MCQ_Bank_788df7bb.json'
-);
-const raw = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
-const rawQuestions = Array.isArray(raw) ? raw : raw.questions;
+// 1. Verify exact count of 80 MCQs
+assert.equal(MCQ_BANK.length, 80, `MCQ_BANK must contain exactly 80 questions, got ${MCQ_BANK.length}`);
+assert.equal(MCQ_SECTIONS.length, 7, 'MCQ_SECTIONS must have 7 sections');
 
-assert.equal(MCQ_BANK.length, 100, 'MCQ_BANK must contain exactly 100 questions');
-assert.equal(rawQuestions.length, 100, 'Source JSON must contain exactly 100 questions');
-
-// 2. Verify exact option order (no runtime shuffling) and balanced A/B/C/D counts (25 each)
+// 2. Verify balanced A/B/C/D counts (20 each), max consecutive run <= 2,
+//    distinct options, AND option length parity (correct option is never longest outlier)
 const counts: Record<'A' | 'B' | 'C' | 'D', number> = { A: 0, B: 0, C: 0, D: 0 };
+const letters: ('A' | 'B' | 'C' | 'D')[] = ['A', 'B', 'C', 'D'];
 let runLetter = '';
 let runLength = 0;
 let maxRunLength = 0;
+const lengthViolations: string[] = [];
 
 MCQ_BANK.forEach((item, idx) => {
-  const src = rawQuestions[idx];
-  assert.equal(item.id, src.id, `ID mismatch at index ${idx}`);
+  assert.equal(item.id, idx + 1, `Expected sequential id ${idx + 1}, got ${item.id}`);
   assert.ok(item.q.length > 0, `Empty question text at id=${item.id}`);
-  assert.equal(item.q, src.q, `Question text mismatch at id=${item.id}`);
-  assert.deepEqual(item.options, src.options, `Options altered/shuffled at id=${item.id}`);
-  assert.equal(item.answer, src.answer, `Answer mismatch at id=${item.id}`);
+  assert.ok(item.explain.length > 0, `Empty explanation at id=${item.id}`);
+  assert.equal(item.options.length, 4, `Expected 4 options at id=${item.id}`);
+  assert.equal(new Set(item.options).size, 4, `Duplicate option text in id=${item.id}`);
 
-  assert.equal(Object.keys(item.options).length, 4);
-  const optValues = Object.values(item.options);
-  assert.equal(new Set(optValues).size, 4, `Duplicate option text in id=${item.id}`);
+  const ansIdx = letters.indexOf(item.answer);
+  assert.ok(ansIdx >= 0, `Invalid answer letter ${item.answer} at id=${item.id}`);
+
+  const correctLen = item.options[ansIdx].length;
+  const otherLens = item.options.filter((_, i) => i !== ansIdx).map((o) => o.length);
+  const maxOtherLen = Math.max(...otherLens);
+  if (correctLen > maxOtherLen) {
+    lengthViolations.push(
+      `Q${item.id}: correctLen=${correctLen} > maxOtherLen=${maxOtherLen} ("${item.options[ansIdx]}")`
+    );
+  }
 
   counts[item.answer] += 1;
 
@@ -46,14 +46,24 @@ MCQ_BANK.forEach((item, idx) => {
   if (runLength > maxRunLength) maxRunLength = runLength;
 });
 
-assert.equal(counts.A, 25, `Expected 25 A answers, got ${counts.A}`);
-assert.equal(counts.B, 25, `Expected 25 B answers, got ${counts.B}`);
-assert.equal(counts.C, 25, `Expected 25 C answers, got ${counts.C}`);
-assert.equal(counts.D, 25, `Expected 25 D answers, got ${counts.D}`);
+assert.equal(
+  lengthViolations.length,
+  0,
+  `Correct option longer than all distractors in:\n${lengthViolations.join('\n')}`
+);
+assert.equal(counts.A, 20, `Expected 20 A answers, got ${counts.A}`);
+assert.equal(counts.B, 20, `Expected 20 B answers, got ${counts.B}`);
+assert.equal(counts.C, 20, `Expected 20 C answers, got ${counts.C}`);
+assert.equal(counts.D, 20, `Expected 20 D answers, got ${counts.D}`);
 assert.ok(maxRunLength <= 2, `Expected max consecutive identical answers <= 2, got ${maxRunLength}`);
 
-// 3. Verify course structure, slide counts (82), notes (6), and week quizzes (30)
-assert.equal(COURSE.weeks.length, 14);
+// 3. Verify expanded Dev Tools & Git + Project & Agile theory counts
+const gitCount = MCQ_BANK.filter((q) => q.section === 'Dev Tools & Git').length;
+const agileCount = MCQ_BANK.filter((q) => q.section === 'Project & Agile Practice').length;
+assert.ok(gitCount >= 16, `Expected expanded Dev Tools & Git section (>=16), got ${gitCount}`);
+assert.ok(agileCount >= 14, `Expected expanded Project & Agile Practice section (>=14), got ${agileCount}`);
+
+// 4. Verify slide decks (82 slides) and 30 check-yourself MCQs
 const published = COURSE.weeks.filter((w) => w.status === 'published');
 assert.equal(published.length, 6);
 const slideCounts = published.map((w) => w.deck?.slides);
@@ -62,7 +72,6 @@ assert.equal(
   slideCounts.reduce((acc, n) => acc + (n || 0), 0),
   82
 );
-assert.equal(STUDY_NOTES.length, 6);
 
 const totalQuizQuestions = Object.values(WEEK_QUIZZES).reduce(
   (sum, list) => sum + list.length,
@@ -71,5 +80,5 @@ const totalQuizQuestions = Object.values(WEEK_QUIZZES).reduce(
 assert.equal(totalQuizQuestions, 30);
 
 console.log(
-  '✓ All mcq-distribution & course-structure tests passed (100 MCQs balanced 25/25/25/25, max run <= 2, 82 slides, 6 notes, 30 check-yourself MCQs).'
+  `✓ All mcq-distribution tests passed: 80 MCQs (20/20/20/20 A-D, max run <= 2, 0 length outliers, Git=${gitCount}, Agile=${agileCount}).`
 );

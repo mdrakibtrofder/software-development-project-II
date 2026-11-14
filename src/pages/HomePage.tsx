@@ -2,19 +2,18 @@ import React from 'react';
 import {
   ArrowRight,
   GraduationCap,
-  Map,
-  FileText,
+  Presentation,
   FlaskConical,
   BookOpen,
   ChevronRight,
   Layers,
   Clock,
-  FolderKanban,
+  CheckSquare,
 } from 'lucide-react';
 import { COURSE } from '../data/course';
-import { STUDY_NOTES } from '../data/notes';
 import { LABS } from '../data/labs';
 import { GLOSSARY } from '../data/glossary';
+import { MCQ_BANK } from '../data/mcq';
 import type { StudyProgressState } from '../state/useStudyStore';
 
 interface HomePageProps {
@@ -23,34 +22,32 @@ interface HomePageProps {
 }
 
 export const HomePage: React.FC<HomePageProps> = ({ state, onNavigate }) => {
-  const totalWeeks = COURSE.weeks.length;
-  const totalNotes = STUDY_NOTES.length;
+  const publishedDecks = COURSE.weeks.filter((w) => w.status === 'published' && w.deck);
+  const totalSlides = publishedDecks.reduce((sum, w) => sum + (w.deck?.slides || 0), 0);
   const totalSims = LABS.length;
   const totalTerms = GLOSSARY.length;
+  const totalMcqs = MCQ_BANK.length;
 
-  const hasHistory =
-    Boolean(state.lastVisited.weekId) ||
-    Boolean(state.lastVisited.labId) ||
-    Boolean(state.lastVisited.noteWeek);
+  const hasHistory = Boolean(state.lastVisited.weekId) || Boolean(state.lastVisited.labId);
 
   const portalCards = [
     {
-      title: 'Weekly Roadmap',
-      pill: `${totalWeeks} Weeks`,
+      title: 'Slide Decks',
+      pill: `${publishedDecks.length} Decks · ${totalSlides} Slides`,
       tileColor: 'var(--tile-indigo)',
       tileBgTint: 'color-mix(in srgb, var(--tile-indigo) 12%, transparent)',
-      icon: Map,
-      to: '/weeks',
-      desc: `${totalWeeks} weekly modules taking you from Flutter installation to your final project demonstration.`,
+      icon: Presentation,
+      to: '/slides',
+      desc: 'Slide outlines, extracted Dart and CLI code snippets, deliverable checklists, and quick quizzes for every deck.',
     },
     {
-      title: 'Notes Library',
-      pill: `${totalNotes} Notes`,
+      title: 'MCQ Practice & Exam',
+      pill: `${totalMcqs} Questions`,
       tileColor: 'var(--tile-violet)',
       tileBgTint: 'color-mix(in srgb, var(--tile-violet) 12%, transparent)',
-      icon: FileText,
-      to: '/notes',
-      desc: 'Slide-based study notes for every published week, with source-slide links, printable and downloadable as PDF.',
+      icon: CheckSquare,
+      to: '/mcq',
+      desc: 'Quick Overview with instant answer toggles, self-paced Practice Mode, and timed Exam Mode across 7 topics.',
     },
     {
       title: 'Visualizations',
@@ -68,7 +65,7 @@ export const HomePage: React.FC<HomePageProps> = ({ state, onNavigate }) => {
       tileBgTint: 'color-mix(in srgb, var(--tile-teal) 12%, transparent)',
       icon: BookOpen,
       to: '/glossary',
-      desc: 'Searchable reference of key Flutter, Dart, REST, maps and Git terms with definitions and examples.',
+      desc: 'Searchable reference of key Flutter, Dart, REST, maps, Git, and Agile terms with examples.',
     },
   ];
 
@@ -104,16 +101,16 @@ export const HomePage: React.FC<HomePageProps> = ({ state, onNavigate }) => {
             </p>
 
             <p className="text-sm sm:text-[17px] text-[var(--text-muted)] leading-relaxed max-w-2xl">
-              Core concepts include Flutter widgets and layouts, Dart null safety, state with setState, navigation, REST and JSON, maps and live weather data, VS Code productivity, Git and GitHub, and agile project practices, all aimed at the app your team will demonstrate in the final week.
+              Core concepts include Flutter widgets and layouts, Dart null safety, state with setState, navigation, REST and JSON, maps and live weather data, VS Code productivity, Git and GitHub, and agile project practices.
             </p>
 
             <div className="flex flex-wrap items-center gap-3 pt-1">
               <button
                 type="button"
-                onClick={() => onNavigate('/weeks')}
+                onClick={() => onNavigate('/mcq')}
                 className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[var(--primary)] text-white text-sm font-semibold hover:opacity-95 transition-opacity shadow-sm whitespace-nowrap"
               >
-                Explore Weekly Roadmap
+                Start MCQ Practice ({totalMcqs} Qs)
                 <ArrowRight className="w-4 h-4" />
               </button>
               <button
@@ -206,9 +203,7 @@ export const HomePage: React.FC<HomePageProps> = ({ state, onNavigate }) => {
                   ? `Week ${state.lastVisited.weekId}${
                       state.lastVisited.slidePage ? ` · Slide ${state.lastVisited.slidePage}` : ''
                     }`
-                  : state.lastVisited.labId
-                  ? `Simulation: ${state.lastVisited.labId}`
-                  : `Week ${state.lastVisited.noteWeek} Study Note`}
+                  : `Simulation: ${state.lastVisited.labId}`}
               </div>
             </div>
           </div>
@@ -293,33 +288,6 @@ export const HomePage: React.FC<HomePageProps> = ({ state, onNavigate }) => {
             );
           })}
         </div>
-      </section>
-
-      {/* Your project at a glance strip */}
-      <section className="portal-card rounded-2xl p-5 sm:p-6 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-xs font-mono font-semibold text-[var(--primary)]">
-            <FolderKanban className="w-4 h-4" />
-            YOUR PROJECT AT A GLANCE
-          </div>
-          <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-[var(--text)] font-semibold pt-1">
-            <span>Wk 4 Proposal (10%)</span>
-            <span className="text-[var(--text-muted)]">·</span>
-            <span>Wk 9 Sprint Review 1</span>
-            <span className="text-[var(--text-muted)]">·</span>
-            <span>Wk 12 Sprint Review 2 (15% total)</span>
-            <span className="text-[var(--text-muted)]">·</span>
-            <span>Wk 14 Final Project (35%)</span>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={() => onNavigate('/project')}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--primary-soft)] text-[var(--primary)] text-xs sm:text-sm font-bold hover:opacity-90 shrink-0"
-        >
-          Open Project Hub & Proposal Builder
-          <ArrowRight className="w-4 h-4" />
-        </button>
       </section>
     </div>
   );

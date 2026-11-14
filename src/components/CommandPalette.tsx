@@ -4,11 +4,10 @@ import { COURSE } from '../data/course';
 import { GLOSSARY } from '../data/glossary';
 import { LABS } from '../data/labs';
 import { SNIPPETS } from '../data/snippets';
-import { STUDY_NOTES } from '../data/notes';
 
 interface SearchEntry {
   id: string;
-  group: 'Weeks' | 'Slides' | 'Simulations' | 'Glossary' | 'Notes' | 'Code & Commands' | 'HTTP Codes';
+  group: 'Decks' | 'Slides' | 'Simulations' | 'Glossary' | 'Code & Commands' | 'HTTP Codes';
   title: string;
   subtitle: string;
   route: string;
@@ -43,15 +42,17 @@ export const CommandPalette: React.FC<{
   const allEntries = useMemo<SearchEntry[]>(() => {
     const entries: SearchEntry[] = [];
 
-    COURSE.weeks.forEach((w) => {
-      entries.push({
-        id: `w-${w.id}`,
-        group: 'Weeks',
-        title: `${w.label}: ${w.title}`,
-        subtitle: `${w.status === 'published' ? `${w.deck?.slides ?? 0} slides` : 'Upcoming'} · ${w.topics.slice(0, 3).join(', ')}`,
-        route: `/week/${w.id}`,
-        keywords: `${w.label} ${w.title} ${w.summary} ${w.topics.join(' ')}`,
-      });
+    COURSE.weeks
+      .filter((w) => w.status === 'published')
+      .forEach((w) => {
+        entries.push({
+          id: `w-${w.id}`,
+          group: 'Decks',
+          title: `${w.label}: ${w.title}`,
+          subtitle: `${w.deck?.slides ?? 0} slides · ${w.topics.slice(0, 3).join(', ')}`,
+          route: `/week/${w.id}`,
+          keywords: `${w.label} ${w.title} ${w.summary} ${w.topics.join(' ')}`,
+        });
       w.slideMap?.forEach((s) => {
         entries.push({
           id: `s-${w.id}-${s.page}`,
@@ -86,21 +87,6 @@ export const CommandPalette: React.FC<{
       });
     });
 
-    STUDY_NOTES.forEach((n) => {
-      const headings = n.blocks
-        .filter((b): b is Extract<typeof b, { type: 'heading' }> => b.type === 'heading')
-        .map((h) => h.text)
-        .join(' ');
-      entries.push({
-        id: `n-${n.week}`,
-        group: 'Notes',
-        title: `Week ${n.week} Note: ${n.title}`,
-        subtitle: n.summary,
-        route: `/note/${n.week}`,
-        keywords: `${n.title} ${n.summary} ${headings}`,
-      });
-    });
-
     SNIPPETS.forEach((sn) => {
       entries.push({
         id: `sn-${sn.id}`,
@@ -120,7 +106,7 @@ export const CommandPalette: React.FC<{
     const q = query.trim().toLowerCase();
     if (!q) {
       return [
-        ...allEntries.filter((e) => e.group === 'Weeks').slice(0, 4),
+        ...allEntries.filter((e) => e.group === 'Decks').slice(0, 4),
         ...allEntries.filter((e) => e.group === 'Simulations').slice(0, 4),
       ];
     }
@@ -168,7 +154,7 @@ export const CommandPalette: React.FC<{
 
   const groupIcon = (group: SearchEntry['group']) => {
     switch (group) {
-      case 'Weeks':
+      case 'Decks':
         return <Layers className="w-4 h-4 text-indigo-500" />;
       case 'Slides':
         return <FileText className="w-4 h-4 text-sky-500" />;
@@ -176,8 +162,6 @@ export const CommandPalette: React.FC<{
         return <FlaskConical className="w-4 h-4 text-emerald-500" />;
       case 'Glossary':
         return <BookOpen className="w-4 h-4 text-teal-500" />;
-      case 'Notes':
-        return <FileText className="w-4 h-4 text-violet-500" />;
       case 'HTTP Codes':
         return <Terminal className="w-4 h-4 text-amber-500" />;
       default:
