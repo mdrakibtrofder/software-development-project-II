@@ -130,9 +130,24 @@ export const HomePage: React.FC<HomePageProps> = ({ state, onNavigate }) => {
             <div className="pt-4 border-t border-[var(--border)] flex items-center gap-2.5 text-xs sm:text-sm text-[var(--text-muted)]">
               <GraduationCap className="w-4 h-4 text-[var(--primary)] shrink-0" />
               <span>
-                Instructor: <strong className="text-[var(--text)]">Md. Rakib Trofder</strong>, Lecturer, Department of CSE, BAUST
+                Instructor: <strong className="text-[var(--text)]">Md. Osama</strong>, Lecturer, CSE, BAUST
               </span>
             </div>
+
+            <div className="pt-4 border-t border-[var(--border)] flex items-center gap-2.5 text-xs sm:text-sm text-[var(--text-muted)]">
+              <GraduationCap className="w-4 h-4 text-[var(--primary)] shrink-0" />
+              <span>
+                Instructor: <strong className="text-[var(--text)]">Md. Sirajul Islam</strong>, Lecturer, CSE, BAUST
+              </span>
+            </div>        
+
+            <div className="pt-4 border-t border-[var(--border)] flex items-center gap-2.5 text-xs sm:text-sm text-[var(--text-muted)]">
+              <GraduationCap className="w-4 h-4 text-[var(--primary)] shrink-0" />
+              <span>
+                Instructor: <strong className="text-[var(--text)]">Md. Rakib Trofder</strong>, Lecturer, CSE, BAUST
+              </span>
+            </div> 
+
           </div>
 
           {/* Right Column (~40%): Hero Visual Widget Tree Card */}

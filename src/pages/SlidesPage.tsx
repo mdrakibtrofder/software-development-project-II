@@ -25,14 +25,7 @@ export const SlidesPage: React.FC<SlidesPageProps> = ({ onNavigate }) => {
         </p>
       </div>
 
-      <div className="p-4 rounded-2xl border border-[var(--border)] bg-[var(--primary-soft)]/60 flex items-start gap-3 text-xs sm:text-sm text-[var(--text)]">
-        <Info className="w-4 h-4 text-[var(--primary)] shrink-0 mt-0.5" />
-        <div>
-          <strong>Instructor attachment ready:</strong> Slide outlines, physical page maps, code snippets and linked simulations are active now. When you drop the PDF and PPTX decks into <code className="font-mono">public/assets/slides/pdf/</code> and <code className="font-mono">pptx/</code>, the viewer and download buttons activate automatically.
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {publishedWeeks.map((week) => {
           const cluster = CLUSTERS[week.cluster];
           return (
