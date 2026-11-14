@@ -1,0 +1,170 @@
+@import "tailwindcss";
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root {
+  --bg: #F8FAFC;
+  --surface: #FFFFFF;
+  --surface-2: #F1F5F9;
+  --text: #0F172A;
+  --text-muted: #475569;
+  --border: #E2E8F0;
+  --primary: #4F46E5;
+  --primary-soft: #EEF2FF;
+  --accent: #0EA5E9;
+  --success: #16A34A;
+  --warning: #D97706;
+  --danger: #DC2626;
+
+  /* clusters */
+  --c-setup: #6366F1;
+  --c-ui: #8B5CF6;
+  --c-net: #3B82F6;
+  --c-maps: #14B8A6;
+  --c-tools: #F59E0B;
+  --c-project: #F43F5E;
+  --c-final: #64748B;
+
+  /* portal tiles */
+  --tile-indigo: #4338CA;
+  --tile-violet: #7C3AED;
+  --tile-green: #2F9E6B;
+  --tile-teal: #2B9A85;
+
+  /* state colors */
+  --state-ok: #DCFCE7;
+  --state-warn: #FEF3C7;
+  --state-bad: #FEE2E2;
+  --scrollbar-thumb: #CBD5E1;
+  --scrollbar-thumb-hover: #94A3B8;
+  --shadow: 0 1px 2px rgba(15, 23, 42, .06), 0 8px 24px rgba(15, 23, 42, .06);
+  --shadow-hover: 0 4px 12px rgba(15, 23, 42, .08), 0 16px 32px rgba(15, 23, 42, .08);
+  --radius: 16px;
+}
+
+:root[data-theme="dark"] {
+  --bg: #0B1120;
+  --surface: #111827;
+  --surface-2: #1F2937;
+  --text: #E5E7EB;
+  --text-muted: #9CA3AF;
+  --border: #273244;
+  --primary: #818CF8;
+  --primary-soft: #1E1B4B;
+  --state-ok: #14532D;
+  --state-warn: #713F12;
+  --state-bad: #7F1D1D;
+  --scrollbar-thumb: #334155;
+  --scrollbar-thumb-hover: #475569;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .35);
+  --shadow-hover: 0 6px 16px rgba(0, 0, 0, .5), 0 16px 36px rgba(0, 0, 0, .45);
+}
+
+html {
+  scroll-behavior: smooth;
+  font-family: 'Plus Jakarta Sans', 'Hind Siliguri', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  transition: background-color 200ms ease, color 200ms ease;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--bg);
+  color: var(--text);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+code, pre, .font-mono {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Slim Scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 9999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover);
+}
+
+/* Cards & Surfaces */
+.portal-card {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1), border-color 180ms ease;
+}
+.portal-card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+/* Overflow hazard stripes for Layout Lab */
+.overflow-stripes {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    #FACC15,
+    #FACC15 8px,
+    #111827 8px,
+    #111827 16px
+  );
+}
+
+/* Hot reload pulse */
+@keyframes softPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.72; transform: scale(0.985); }
+}
+.animate-hot-reload {
+  animation: softPulse 6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Focus rings */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Print stylesheet */
+@media print {
+  body {
+    background: #FFFFFF !important;
+    color: #0F172A !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-break-inside-avoid {
+    break-inside: avoid;
+  }
+  details.print-open {
+    display: block !important;
+  }
+}
